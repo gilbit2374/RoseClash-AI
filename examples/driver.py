@@ -11,8 +11,7 @@ def drive(world):
     """
     This method controls the car's movement based on the obstacle it encounters.
 
-    Parameters:
-    world (World): The game world object containing the car and obstacles.
+    Parameters: world (World): The game world object containing the car and obstacles.
 
     Returns:
     Action: An action to perform based on the obstacle encountered.
