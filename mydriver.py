@@ -16,10 +16,6 @@ class Type(enum):
 driver_name = "MyDriver"
 
 
-def()
-
-
-
 def drive(world):
     x = world.car.x
     y = world.car.y
