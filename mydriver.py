@@ -1,11 +1,11 @@
 """
 This driver does not do any action.
 """
-from rose.ai import world
+
 from rose.common import obstacles, actions  # NOQA
 
-driver_name = "MyDriver"
-d = 4
+driver_name = "GPS"
+d = 6
 game_map = []
 
 OBSTACLE_CODE = {
@@ -19,28 +19,31 @@ OBSTACLE_CODE = {
 }
 
 
-def code_for(cell, obs, car_pos):
-    """Translate a cell's obstacle into its int code. -1 if it's the car."""
-    if cell == car_pos:
-        return -1
+def code_for(obs):
+    """Translate a cell's obstacle into its int code."""
     return OBSTACLE_CODE.get(obs, 4)  # unknown obstacle -> treat as "avoid"
 
 
-def gps(world, distance, lanes=(0, 1, 2)):
+def gps(world, distance, lanes=None):
     """
-    Scans `lanes`, from the player's own row (step 0) through step `distance - 1`.
+    Scans `lanes` (default: the car's own lane, plus one lane on each side),
+    from the player's own row (step 0) through step `distance - 1`.
     Returns a 2D list: game_map[lane_index][step], shape = (len(lanes), distance).
     step 0 = player's row, step 1 = 1 cell ahead, ..., step distance-1 = furthest cell scanned.
     The car's own cell is marked -1; all other cells use OBSTACLE_CODE.
     """
-    car_pos = (world.car.x, world.car.y)
+    car_x, car_y = world.car.x, world.car.y  # snapshot ONCE
+    if lanes is None:
+        lanes = (car_x - 1, car_x, car_x + 1)
     grid = []
     for x in lanes:
         row = []
         for step in range(distance):
-            cell = (x, world.car.y - step)
-            obs = world.get(cell)
-            row.append(code_for(cell, obs, car_pos))
+            if step == 0 and x == car_x:
+                row.append(-1)
+            else:
+                obs = world.get((x, car_y - step))
+                row.append(code_for(obs))
         grid.append(row)
     return grid
 
@@ -59,7 +62,6 @@ def drive(world):
 
     #old car UI
     obstacle = world.get((x, y - d))
-
     if obstacle == obstacles.PENGUIN:
         return actions.PICKUP
     elif obstacle == obstacles.WATER:
